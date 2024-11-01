@@ -1,14 +1,7 @@
-import {
-  ChangeEvent,
-  FC,
-  ReactNode,
-  useCallback,
-  useMemo,
-  useState,
-} from 'react';
+import { ChangeEvent, FC, ReactNode, useMemo, useState } from 'react';
 import { Person } from '../types/Person';
 
-import _debounce from 'lodash/debounce';
+import _debounce from 'lodash.debounce';
 
 interface IProps {
   people: Person[];
