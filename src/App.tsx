@@ -1,7 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import './App.scss';
 import { peopleFromServer } from './data/people';
-import Autocomplete from './components/Autocomplete';
+import Autocomplete from './components/Autocomplete/Autocomplete';
 import { Person } from './types/Person';
 
 export const App: React.FC = () => {
@@ -14,11 +14,6 @@ export const App: React.FC = () => {
     title = `${name} (${born} - ${died})`;
   }
 
-  const handleSelectPerson = useCallback(
-    (person: Person | null) => setSelectedPerson(person),
-    [selectedPerson],
-  );
-
   return (
     <div className="container">
       <main className="section is-flex is-flex-direction-column">
@@ -28,7 +23,7 @@ export const App: React.FC = () => {
 
         <Autocomplete
           people={peopleFromServer}
-          onSelected={handleSelectPerson}
+          setSelectedPerson={setSelectedPerson}
           selectedPerson={selectedPerson}
         />
       </main>

@@ -1,18 +1,28 @@
-import { ChangeEvent, FC, ReactNode, useMemo, useState } from 'react';
-import { Person } from '../types/Person';
+import {
+  ChangeEvent,
+  Dispatch,
+  FC,
+  ReactNode,
+  SetStateAction,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
+import { Person } from '../../types/Person';
 
 import _debounce from 'lodash.debounce';
+import { Notification } from '../Notification/Notification';
 
-interface IProps {
+interface AutocompleteProps {
   people: Person[];
-  onSelected: (person: Person | null) => void;
+  setSelectedPerson: Dispatch<SetStateAction<Person | null>>;
   selectedPerson: Person | null;
   delay?: number;
 }
 
-const Autocomplete: FC<IProps> = ({
+const Autocomplete: FC<AutocompleteProps> = ({
   people,
-  onSelected,
+  setSelectedPerson,
   selectedPerson,
   delay = 300,
 }): ReactNode => {
@@ -22,20 +32,43 @@ const Autocomplete: FC<IProps> = ({
 
   const debouncedSetQuery = _debounce(setDebounceQuery, delay);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
+  const handleChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const { value } = event.target;
 
-    setActive(true);
-    setQuery(value);
-    debouncedSetQuery(value);
-    onSelected(null);
+      if (!isActive) {
+        setActive(true);
+      }
+
+      setQuery(value);
+      debouncedSetQuery(value);
+
+      if (selectedPerson) {
+        setSelectedPerson(null);
+      }
+    },
+    [isActive, selectedPerson],
+  );
+
+  const handleSelectReset = () => {
+    if (isActive) {
+      setActive(false);
+    }
+    if (query) {
+      setQuery('');
+    }
   };
 
-  const handleSelectPerson = (person: Person) => {
-    onSelected(person);
-    setActive(false);
-    setQuery('');
-  };
+  const handleSelectPerson = useCallback(
+    (person: Person) => {
+      setSelectedPerson(person);
+
+      if (isActive || query) {
+        handleSelectReset();
+      }
+    },
+    [isActive, query],
+  );
 
   const filtredPeople = useMemo(
     () => people.filter(({ name }) => name.includes(debounceQuery)),
@@ -70,21 +103,7 @@ const Autocomplete: FC<IProps> = ({
               </div>
             ))}
 
-            {filtredPeople.length === 0 && (
-              <div
-                className="
-            notification
-            is-danger
-            is-light
-            mt-3
-            is-align-self-flex-start
-          "
-                role="alert"
-                data-cy="no-suggestions-message"
-              >
-                <p className="has-text-danger">No matching suggestions</p>
-              </div>
-            )}
+            {!!filtredPeople.length && <Notification />}
           </div>
         </div>
       )}
